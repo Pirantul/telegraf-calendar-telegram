@@ -1,16 +1,18 @@
-const Calendar = require('../');
+import { Telegraf } from 'telegraf'
+import { Calendar } from './Calendar.js'
+import 'dotenv/config' 
 
-const Telegraf = require('telegraf');
 // create the bot
 const bot = new Telegraf(process.env.CALENDAR_BOT_TOKEN);
+bot.use(Telegraf.log())
 
 // instantiate the calendar
 const calendar = new Calendar(bot, {
 	startWeekDay: 1,
-	weekDayNames: ["L", "M", "M", "G", "V", "S", "D"],
+	weekDayNames: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
 	monthNames: [
-		"Gen", "Feb", "Mar", "Apr", "Mag", "Giu",
-		"Lug", "Ago", "Set", "Ott", "Nov", "Dic"
+		"Янв", "Фев", "Мар", "Апр", "Май", "Июн",
+		"Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"
 	]
 });
 
@@ -21,16 +23,24 @@ bot.command("calendar", context => {
 
 	const today = new Date();
 	const minDate = new Date();
-	minDate.setMonth(today.getMonth() - 2);
+	minDate.setMonth(today.getMonth());
 	const maxDate = new Date();
-	maxDate.setMonth(today.getMonth() + 2);
+	maxDate.setMonth(today.getMonth() + 3);
 	maxDate.setDate(today.getDate());
 
-	context.reply("Here you are", calendar.setMinDate(minDate).setMaxDate(maxDate).getCalendar())
+	context.reply("Выберите дату заезда и выезда:", calendar.setMinDate(minDate).setMaxDate(maxDate).getCalendar())
+});
+
+bot.command("start", context => {
+	context.reply("Привет. Отправь команду: /calendar" )
 });
 
 bot.catch((err) => {
 	console.log("Error in bot:", err);
 });
 
-bot.startPolling();
+bot.launch()
+
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'))
+process.once('SIGTERM', () => bot.stop('SIGTERM'))
